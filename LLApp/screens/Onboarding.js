@@ -121,3 +121,4 @@ button: {
     textAlign: 'center',
     fontSize: 25,
   },
+});
