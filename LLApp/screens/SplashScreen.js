@@ -1,10 +1,10 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function Profile() {
+export default function SplashScreen() {
 
   return (
     <View style={styles.container}>
-        <Text>Profile Page</Text>
+        <Text>Splash Screen</Text>
     </View>
   );
 }
