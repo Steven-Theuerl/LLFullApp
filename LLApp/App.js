@@ -1,4 +1,5 @@
-import { StatusBar } from 'expo-status-bar';
+import * as React from 'react';
+import * as SecureStore from 'expo-secure-store'
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -8,50 +9,90 @@ import Onboarding from './screens/Onboarding';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 
-export default function App() {
+export default function App({ navigation }) {
 
+    const AuthContext = React.createContext();
     const Stack = createNativeStackNavigator();
-
-    const updateUserState = async (userState) => {
-        try {
-            const jsonState = JSON.stringify(userState)
-            await AsyncStorage.setItem('my-key', jsonState);
-        } catch (e) {
-            // saving the error
+    const [state, dispatch] = React.useReducer(
+        (prevState, action) => {
+            switch (action.type) {
+                case 'RESTORE_TOKEN' :
+                    return {
+                        ...prevState,
+                        userToken: action.token,
+                        isLoading: false,
+                    };
+                case 'SIGN_IN' :
+                    return {
+                        ...prevState,
+                        isOnboardingCompleted: true,
+                        userToken: null,
+                    };
+                case 'SIGN_OUT' :
+                    return {
+                        ...prevState,
+                        isOnboardingCompleted: false,
+                        userToken: null,
+                    };
+            }
+        },
+        {
+            isLoading: true,
+            isOnboardingCompleted: false,
+            userToken: null,
         }
-    }
+    );
 
-    const userState = {
-        isLoading: false,
-        isOnboardingCompleted: false,
-    }
+    React.useEffect(() => {
+        //Fetch token from storage then navigate to our appropriate screen.
+        const bootstrapAsync = async () => {
+            try {
+                userToken = await AsyncStorage.getItem('userToken')
+            } catch (e) {
+                //restoring token failed
+            }
+            // After restoring the token, we may need to validate it in production apps
 
-    updateUserState(userState);
-
-    const getData = async () => {
-        try {
-            const jsonState = await AsyncStorage.getItem('my-key');
-            return jsonState != null ? JSON.parse(jsonState) : null;
-        } catch (e) {
-            //error reading value
-        }
+            // This will switch to the App screen or Auth screen and this Loading screen will be unmounted and thrown away
+            dispatch({ type: 'RESTORE_TOKEN', token: userToken });
     };
 
-    if (userState.isLoading) {
-        return <ProfileScreen />
+    bootstrapAsync();
+}, []);
+
+    const authContext = React.useMemo (
+        () => ({
+                signIn: async (data) => {
+                    //In a production app, we need to send some data (usually username and password) to server and get
+                    //a token. We will also ned to handle errors if sign in fails. After getting the token, we need to
+                    //persist the token using 'SecureStore'. In this case we'll be using 'dummy-auth-token'
+                    dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token'});
+                },
+                signOut: () => dispatch({ type: 'SIGN_OUT' }),
+                signUp: async (data) => {
+                    dispatch({ type: 'SIGN_IN', token: 'dummy-auth-token' });
+                },
+            }),
+            []
+    );
+
+    if (state.isLoading) {
+        return <SplashScreen />
     }
 
     return (
         <NavigationContainer>
-            <Stack.Navigator>
-                {userState.isOnboardingCompleted ? (
-                    // Onboarding completed, user is signed in
-                    <Stack.Screen name="Profile" component={ProfileScreen} />
-                ) : (
-                    //User is NOT signed in
-                <Stack.Screen name="Onboarding" component={Onboarding} />
-            )}
-            </Stack.Navigator>
+            <AuthContext.Provider value={authContext}>
+                <Stack.Navigator>
+                    {state.isOnboardingCompleted ? (
+                        // Onboarding completed, user is signed in
+                        <Stack.Screen name="Profile" component={ProfileScreen} />
+                    ) : (
+                        //User is NOT signed in
+                    <Stack.Screen name="Onboarding" component={Onboarding} />
+                )}
+                </Stack.Navigator>
+            </AuthContext.Provider>
         </NavigationContainer>
     );
 };
