@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native';
@@ -6,6 +7,15 @@ export default function Onboarding() {
 
     const [name, nameChange] = useState('');
     const [email, emailChange] = useState('');
+
+    const setUserInfo = async () => {
+        const userName = ['userPrefName', name]
+        const userEmail = ['userPrefEmail', email]
+        try {
+            await AsyncStorage.multiSet([userName, userEmail])
+        } catch(e) {}
+        alert('User info updated')
+    } 
 
   return (
     <View style={styles.container}>
@@ -23,7 +33,7 @@ export default function Onboarding() {
                 <TextInput
                     style={styles.inputBox}
                     value={name}
-                    onChangeText={nameChange}
+                    onChangeText={(text) => nameChange(text)}
                     placeholder={'Name'}
                     keyboardType={'email-address'}
                 />
@@ -33,7 +43,7 @@ export default function Onboarding() {
                 <TextInput
                     style={styles.inputBox}
                     value={email}
-                    onChangeText={emailChange}
+                    onChangeText={(text) => emailChange(text)}
                     placeholder={'Email'}
                     keyboardType={'email-address'}
                 />
@@ -41,7 +51,7 @@ export default function Onboarding() {
         </View>
         <View style={styles.footerContainer}>
             <Pressable style={styles.button}
-                        disabled={true}>
+                        onPress={() => setUserInfo()}>
                 <Text style={styles.buttonText}>Next</Text>
             </Pressable>
         </View>

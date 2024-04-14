@@ -1,16 +1,9 @@
 import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Onboarding from './Onboarding';
 
 export default function ProfileScreen() {
 
-    const getData = async () => {
-        try {
-            const jsonState = await AsyncStorage.getItem('my-key');
-            return jsonState != null ? JSON.parse(jsonState) : null;
-        } catch (e) {
-            //error reading value
-        }
-    }
 
   return (
     <View style={styles.container}>
@@ -29,7 +22,9 @@ export default function ProfileScreen() {
             resizeMode='stretch'
         />
       </View>
-      <View style={styles.profileBody}></View>
+      <View style={styles.profileBody}>
+        
+      </View>
       <View style={styles.profileFooter}></View>
     </View>
   );
