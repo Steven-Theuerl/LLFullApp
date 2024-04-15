@@ -23,7 +23,7 @@ export default function ProfileScreen() {
         />
       </View>
       <View style={styles.profileBody}>
-        
+        <Text></Text>
       </View>
       <View style={styles.profileFooter}></View>
     </View>
