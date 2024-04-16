@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, Pressable, Image, TextInput, ScrollView, Switch } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Onboarding from './Onboarding';
+import { useEffect } from 'react';
 
 export default function ProfileScreen() {
 
@@ -22,10 +23,72 @@ export default function ProfileScreen() {
             resizeMode='stretch'
         />
       </View>
-      <View style={styles.profileBody}>
-        <Text></Text>
+      <ScrollView style={styles.profileBody}>
+
+
+        <Text style={styles.bodyHeader}>Personal Information</Text>
+        <Text style={styles.inputLabel}>Avatar</Text>
+        <View style={styles.profilePicSettings}>
+            <Image
+            style={styles.imageProfileLarge}
+            source={require('../images/Profile.png')}
+            resizeMode='stretch'/>
+            <Pressable style={styles.changePFPButton}>
+                <Text style={styles.changePFPButtonText}>Change</Text>
+            </Pressable>
+            <Pressable style={styles.removePFPButton}>
+                <Text style={styles.removePFPButtonText}>Remove</Text>
+            </Pressable>
+        </View>
+
+        <Text style={styles.inputLabel}>First Name</Text>
+        <TextInput style={styles.inputBox}>Sandra</TextInput>
+        <Text style={styles.inputLabel}>Last Name</Text>
+        <TextInput style={styles.inputBox}>Sansa</TextInput>
+        <Text style={styles.inputLabel}>Email</Text>
+        <TextInput style={styles.inputBox}>sandrasansa@somethingorother.com</TextInput>
+        <Text style={styles.inputLabel}>Phone Number</Text>
+        <TextInput style={styles.inputBox}>(202) 358-0001</TextInput>
+
+
+
+
+        <Text style={styles.bodyHeader}>Email Notifiction Preferences</Text>
+        <View style={styles.notificationOption}>
+            <Switch></Switch>
+            <Text style={styles.notificationSwitchDescription}>Order Status</Text>
+        </View>
+        <View style={styles.notificationOption}>
+            <Switch></Switch>
+            <Text style={styles.notificationSwitchDescription}>Password Changes</Text>
+        </View>
+        <View style={styles.notificationOption}>
+            <Switch></Switch>
+            <Text style={styles.notificationSwitchDescription}>Special Offers</Text>
+        </View>
+        <View style={styles.notificationOption}>
+            <Switch></Switch>
+            <Text style={styles.notificationSwitchDescription}>Newsletter</Text>
+        </View>
+        
+        
+
+
+
+      </ScrollView>
+      <View style={styles.profileFooter}>
+        <Pressable style={styles.logoutButton}>
+            <Text style={styles.logoutButtonText}>Log out</Text>
+        </Pressable>
+        <View style={styles.changeButtons}>
+            <Pressable style={styles.discardChanges}>
+                <Text style={styles.discardButtonText}>Discard Changes</Text>
+            </Pressable>
+            <Pressable style={styles.saveChanges}>
+                <Text style={styles.saveButtonText}>Save Changes</Text>
+            </Pressable>
+        </View>
       </View>
-      <View style={styles.profileFooter}></View>
     </View>
   );
 }
@@ -42,15 +105,55 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
   },
+    profilePicSettings: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+  },
+    changePFPButton: {
+        backgroundColor: '#495E57',
+        width: 120,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.25,
+        borderRadius: 12,
+    },
+    changePFPButtonText: {
+        color: "white",
+        fontWeight: '700',
+    },
+
+    removePFPButton:{
+        backgroundColor: '#EDEFEE',
+        width: 140,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.25,
+        borderRadius: 12,
+    },
+    removePFPButtonText: {
+        color: "gray",
+        fontWeight: '700',
+    },
+
+    bodyHeader: {
+        fontSize: 24,
+        padding: 8,
+    },
     profileBody: {
         flex: .6
   },
     profileFooter: {
-        flex: .2
+        flex: .25,
+        backgroundColor: '#EDEF32',
+        alignItems: 'center'
+
   },
      button: {
-        marginTop: 60,
-        marginLeft: 30,
+        marginTop: 15,
+        marginLeft: 20,
         width: 50,
         height: 50,
         backgroundColor: '#495E57',
@@ -65,14 +168,112 @@ const styles = StyleSheet.create({
        alignItems: 'center',
     },
     imageLogo: {
-       height: 175,
+       height: 80,
        width: 200,
      },
      imageProfile: {
         height: 60,
         width: 60,
         marginRight: 30,
-        marginTop: 55,
+        marginTop: 12,
         borderRadius: 60,
       },
-});
+      imageProfileLarge: {
+        height: 100,
+        width: 100,
+        marginLeft: 10,
+        marginTop: 12,
+        borderRadius: 60,
+      },
+
+      inputBox: {
+        height: 40,
+        marginLeft: 30,
+        marginRight: 30,
+        marginTop: 4,
+        marginBottom: 14,
+        borderWidth: 1,
+        padding: 10,
+        fontSize: 16,
+        borderColor: '#164E12',
+        backgroundColor: '#EDEFEE',
+        borderRadius: 10,
+        borderWidth: 1.25,
+      },
+
+      inputLabel: {
+        fontSize: 16,
+        padding: 4,
+        marginTop: 2,
+        marginLeft: 20
+
+      },
+
+      notificationOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        marginLeft: 20,
+        marginTop:10,
+        marginBottom: 10,
+      },
+
+      notificationSwitchDescription: {
+        marginLeft: 20,
+      },
+
+
+
+
+
+      logoutButton: {
+        width: 325,
+        height: 40,
+        marginLeft: 30,
+        marginRight: 30,
+        marginTop: 10,
+        backgroundColor: '#F4CE14',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: 12,
+      },
+      logoutButtonText: {
+        color: "black",
+        fontWeight: '700',
+      },
+      changeButtons: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 15,
+      },
+      discardChanges: {
+        backgroundColor: '#EDEFEE',
+        width: 140,
+        marginLeft: 60,
+        marginRight: 10,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.25,
+        borderRadius: 12,
+      },
+      discardButtonText: {
+        color: "gray",
+        fontWeight: '700',
+      },
+      saveChanges: {
+        backgroundColor: '#495E57',
+        width: 120,
+        marginLeft: 10,
+        marginRight: 60,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1.25,
+        borderRadius: 12,
+      },
+      saveButtonText: {
+        color: "white",
+        fontWeight: '700',
+      },
+    })

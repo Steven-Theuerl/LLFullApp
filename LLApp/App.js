@@ -39,35 +39,28 @@ export default function App({ navigation }) {
         },
         {
             isLoading: true,
-            isOnboardingCompleted: false,
+            isOnboardingCompleted: true,
             userToken: null,
         }
     );
 
     React.useEffect(() => {
-        //Fetch token from storage then navigate to our appropriate screen.
         const bootstrapAsync = async () => {
             let req;
             try {
                 req = await SecureStore.multiGet(['userPrefName', 'userPrefEmail'])
             } catch (e) {
-                //restoring token failed
             }
-            // After restoring the token, we may need to validate it in production apps
-
-            // This will switch to the App screen or Auth screen and this Loading screen will be unmounted and thrown away
             dispatch({ type: 'RESTORE_TOKEN', token: req});
     };
 
         bootstrapAsync();
     }, []);
 
+
     const authContext = React.useMemo (
         () => ({
                 signIn: async () => {
-                    //In a production app, we need to send some data (usually username and password) to server and get
-                    //a token. We will also need to handle errors if sign in fails. After getting the token, we need to
-                    //persist the token using 'SecureStore'. In this case we'll be using 'dummy-auth-token'
                     dispatch({ type: 'SIGN_IN', token: 'userPrefName'});
                 },
                 signOut: () => dispatch({ type: 'SIGN_OUT' }),
