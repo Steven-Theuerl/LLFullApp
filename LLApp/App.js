@@ -5,13 +5,14 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 import Onboarding from './screens/Onboarding';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 
 export default function App({ navigation }) {
 
-    const AuthContext = React.createContext();
+
     const Stack = createNativeStackNavigator();
 
     const [state, dispatch] = React.useReducer(
@@ -32,44 +33,31 @@ export default function App({ navigation }) {
                 case 'SIGN_OUT' :
                     return {
                         ...prevState,
-                        isOnboardingCompleted: false,
+                        isOnboardingCompleted: true,
                         userToken: null,
                     };
             }
         },
         {
-            isLoading: true,
-            isOnboardingCompleted: true,
+            isLoading: false,
+            isOnboardingCompleted: false,
             userToken: null,
         }
     );
 
     React.useEffect(() => {
-        const bootstrapAsync = async () => {
-            let req;
+       ( async() => {
             try {
-                req = await SecureStore.multiGet(['userPrefName', 'userPrefEmail'])
-            } catch (e) {
+                const state = await AsyncStorage.multiGet(userSettings)
+                if (userSettings !== null) {
+                    dispatch({type: 'SIGN_IN'})
+                } else {
+                    dispatch({ type: 'RESTORE_TOKEN'})
             }
-            dispatch({ type: 'RESTORE_TOKEN', token: req});
-    };
-
-        bootstrapAsync();
-    }, []);
+            } catch(e) { }
+            })})
 
 
-    const authContext = React.useMemo (
-        () => ({
-                signIn: async () => {
-                    dispatch({ type: 'SIGN_IN', token: 'userPrefName'});
-                },
-                signOut: () => dispatch({ type: 'SIGN_OUT' }),
-                signUp: async () => {
-                    dispatch({ type: 'SIGN_IN', token: 'userPrefName' });
-                },
-                }),
-            []
-    );
 
     if (state.isLoading) {
         return <SplashScreen />
@@ -77,17 +65,18 @@ export default function App({ navigation }) {
 
     return (
         <NavigationContainer>
-            <AuthContext.Provider value={authContext}>
-                <Stack.Navigator>
+           
+                <Stack.Navigator
+                    >
                     {state.isOnboardingCompleted ? (
                         // Onboarding completed, user is signed in
-                        <Stack.Screen name="Profile" component={ProfileScreen} />
+                        <Stack.Screen  name="Profile" component={ProfileScreen} />
                     ) : (
                         //User is NOT signed in
                     <Stack.Screen name="Onboarding" component={Onboarding} />
                 )}
                 </Stack.Navigator>
-            </AuthContext.Provider>
+         
         </NavigationContainer>
     );
 };

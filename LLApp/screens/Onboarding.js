@@ -1,23 +1,32 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native';
+import useUpdateEffect from '../../useUpdate';
 
-export default function Onboarding(state) {
 
-    const [name, nameChange] = useState('');
-    const [email, emailChange] = useState('');
 
-    const setUserInfo = async () => {
-        const userName = ['userPrefName', name]
-        const userEmail = ['userPrefEmail', email]
+
+export default function Onboarding() {
+
+    const [userSettings, changeUserSettings] = useState({
+        name: 'Sandra',
+        email: 'Sansa',
+    });
+
+
+useUpdateEffect(() => {
+    (async () => {
+        const userName = ["userPrefName", "userSettings.name"]
+        const userEmail = ["userPrefEmail", "userSettings.email"]
         try {
             await AsyncStorage.multiSet([userName, userEmail])
-        } catch(e) {}
-        alert('User info updated')
-    } 
+        } catch(e) {
+            alert(`An error occured: ${e.message}`)
+        }
+    })});
 
-    cxInfo = []
+  
 
   return (
     <View style={styles.container}>
@@ -34,8 +43,8 @@ export default function Onboarding(state) {
                 <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
                     style={styles.inputBox}
-                    value={name}
-                    onChangeText={(text) => nameChange(text)}
+                    value={userSettings.name}
+                    onValueChange={changeUserSettings(userSettings)}
                     placeholder={'Name'}
                     keyboardType={'email-address'}
                 />
@@ -44,8 +53,8 @@ export default function Onboarding(state) {
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
                     style={styles.inputBox}
-                    value={email}
-                    onChangeText={(text) => emailChange(text)}
+                    value={userSettings.email}
+                    onValueChange={changeUserSettings(userSettings)}
                     placeholder={'Email'}
                     keyboardType={'email-address'}
                 />
@@ -53,7 +62,7 @@ export default function Onboarding(state) {
         </View>
         <View style={styles.footerContainer}>
             <Pressable style={styles.button}
-                        onPress={() => setUserInfo()}>
+                        onPress={multiSet()}>
                 <Text style={styles.buttonText}>Next</Text>
             </Pressable>
         </View>

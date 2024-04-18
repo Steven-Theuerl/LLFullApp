@@ -1,9 +1,23 @@
 import { StyleSheet, Text, View, Pressable, Image, TextInput, ScrollView, Switch } from 'react-native';
+import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Onboarding from './Onboarding';
 import { useEffect } from 'react';
 
 export default function ProfileScreen() {
+    const [orderStatus, setOrderStatus] = useState(false)
+    const toggleOrderStatus = () => setOrderStatus(previousState => !previousState)
+
+    const [passwordChanges, setPasswordChanges] = useState(false)
+    const togglePasswordChanges = () => setPasswordChanges(previousState => !previousState)
+
+    const [specialOffers, setSpecialOffers] = useState(false)
+    const toggleSpecialOffers = () => setSpecialOffers(previousState => !previousState)
+
+    const [newsletter, setNewsletter] = useState(false)
+    const toggleNewsletter = () => setNewsletter(previousState => !previousState)
+
+
 
 
   return (
@@ -55,19 +69,39 @@ export default function ProfileScreen() {
 
         <Text style={styles.bodyHeader}>Email Notifiction Preferences</Text>
         <View style={styles.notificationOption}>
-            <Switch></Switch>
+            <Switch
+                onValueChange={toggleOrderStatus}
+                value={orderStatus}
+                trackColor={{false: '#767577', true: '#495E57'}}
+                thumbColor={orderStatus ? '#F4CE14' : '#f4f3f4'}
+            />
             <Text style={styles.notificationSwitchDescription}>Order Status</Text>
         </View>
         <View style={styles.notificationOption}>
-            <Switch></Switch>
+            <Switch
+                onValueChange={togglePasswordChanges}
+                value={passwordChanges}
+                trackColor={{false: '#767577', true: '#495E57'}}
+                thumbColor={passwordChanges ? '#F4CE14' : '#f4f3f4'}
+            />
             <Text style={styles.notificationSwitchDescription}>Password Changes</Text>
         </View>
         <View style={styles.notificationOption}>
-            <Switch></Switch>
+            <Switch
+                onValueChange={toggleSpecialOffers}
+                value={specialOffers}
+                trackColor={{false: '#767577', true: '#495E57'}}
+                thumbColor={specialOffers ? '#F4CE14' : '#f4f3f4'}
+            />
             <Text style={styles.notificationSwitchDescription}>Special Offers</Text>
         </View>
         <View style={styles.notificationOption}>
-            <Switch></Switch>
+            <Switch
+                onValueChange={toggleNewsletter}
+                value={newsletter}
+                trackColor={{false: '#767577', true: '#495E57'}}
+                thumbColor={newsletter ? '#F4CE14' : '#f4f3f4'}
+            />
             <Text style={styles.notificationSwitchDescription}>Newsletter</Text>
         </View>
         
@@ -96,28 +130,28 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f7f7f7',
+        backgroundColor: '#EDEFEE',
   },
     profileHeader: {
         flex: .15,
-        backgroundColor: 'gray',
         width: 428,
         flexDirection: 'row',
         justifyContent: 'space-between',
   },
     profilePicSettings: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         alignItems: 'center',
   },
     changePFPButton: {
         backgroundColor: '#495E57',
-        width: 120,
+        width: 100,
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1.25,
         borderRadius: 12,
+        marginRight: 10,
     },
     changePFPButtonText: {
         color: "white",
@@ -126,12 +160,12 @@ const styles = StyleSheet.create({
 
     removePFPButton:{
         backgroundColor: '#EDEFEE',
-        width: 140,
+        width: 100,
         height: 40,
         alignItems: 'center',
         justifyContent: 'center',
         borderWidth: 1.25,
-        borderRadius: 12,
+        borderRadius: 4,
     },
     removePFPButtonText: {
         color: "gray",
@@ -143,11 +177,13 @@ const styles = StyleSheet.create({
         padding: 8,
     },
     profileBody: {
-        flex: .6
+        flex: .6,
+        border: 2,
+        marginLeft: 8,
+        marginRight: 8,
   },
     profileFooter: {
         flex: .25,
-        backgroundColor: '#EDEF32',
         alignItems: 'center'
 
   },
@@ -182,6 +218,7 @@ const styles = StyleSheet.create({
         height: 100,
         width: 100,
         marginLeft: 10,
+        marginRight: 14,
         marginTop: 12,
         borderRadius: 60,
       },
