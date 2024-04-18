@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native';
-import useUpdateEffect from '../../useUpdate';
+
 
 
 
@@ -15,7 +15,7 @@ export default function Onboarding() {
     });
 
 
-useUpdateEffect(() => {
+useUpdate = () => {
     (async () => {
         const userName = ["userPrefName", "userSettings.name"]
         const userEmail = ["userPrefEmail", "userSettings.email"]
@@ -24,7 +24,7 @@ useUpdateEffect(() => {
         } catch(e) {
             alert(`An error occured: ${e.message}`)
         }
-    })});
+    })};
 
   
 
@@ -44,7 +44,7 @@ useUpdateEffect(() => {
                 <TextInput
                     style={styles.inputBox}
                     value={userSettings.name}
-                    onValueChange={changeUserSettings(userSettings)}
+                    onValueChange={(text) => changeUserSettings(name)}
                     placeholder={'Name'}
                     keyboardType={'email-address'}
                 />
@@ -54,7 +54,7 @@ useUpdateEffect(() => {
                 <TextInput
                     style={styles.inputBox}
                     value={userSettings.email}
-                    onValueChange={changeUserSettings(userSettings)}
+                    onValueChange={(text) => changeUserSettings(text)}
                     placeholder={'Email'}
                     keyboardType={'email-address'}
                 />
@@ -62,7 +62,7 @@ useUpdateEffect(() => {
         </View>
         <View style={styles.footerContainer}>
             <Pressable style={styles.button}
-                        onPress={multiSet()}>
+                        onPress={useUpdate()}>
                 <Text style={styles.buttonText}>Next</Text>
             </Pressable>
         </View>

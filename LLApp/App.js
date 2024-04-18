@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Onboarding from './screens/Onboarding';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
+import HomeScreen from './screens/Home';
 
 export default function App({ navigation }) {
 
@@ -40,7 +41,7 @@ export default function App({ navigation }) {
         },
         {
             isLoading: false,
-            isOnboardingCompleted: false,
+            isOnboardingCompleted: true,
             userToken: null,
         }
     );
@@ -69,8 +70,10 @@ export default function App({ navigation }) {
                 <Stack.Navigator
                     >
                     {state.isOnboardingCompleted ? (
-                        // Onboarding completed, user is signed in
+                        <>
+                        <Stack.Screen name="Home" component={HomeScreen} />
                         <Stack.Screen  name="Profile" component={ProfileScreen} />
+                        </>
                     ) : (
                         //User is NOT signed in
                     <Stack.Screen name="Onboarding" component={Onboarding} />
