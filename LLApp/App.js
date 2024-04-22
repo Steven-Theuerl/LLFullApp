@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Alert } from 'react-native';
 
 import { Onboarding } from './screens/Onboarding';
-import ProfileScreen from './screens/ProfileScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import HomeScreen from './screens/Home';
 
@@ -67,7 +67,7 @@ export default function App({ navigation }) {
                         }
                         dispatch({ type: 'ONBOARDING', isOnboardingCompleted: true })
                     },
-                    update: async ( data ) => {
+                    updateUserInfo: async ( data ) => {
                         try {
                             const jsonValue = JSON.stringify(data);
                             await AsyncStorage.setItem( 'profile', jsonValue )
@@ -76,7 +76,7 @@ export default function App({ navigation }) {
                         }
                         Alert.alert('Changes saved!');
                     },
-                    logout: async () => {
+                    logoutUser: async () => {
                         try {
                             await AsyncStorage.clear();
                         } catch(err) {

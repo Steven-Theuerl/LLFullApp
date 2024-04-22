@@ -1,26 +1,72 @@
-import { StyleSheet, Text, View, Pressable, Image, TextInput, ScrollView, Switch } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Text, View, Pressable, Image, TextInput, ScrollView, Switch, KeyboardAvoidingView, Platform } from 'react-native';
+import { useState, useContext, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../contexts/AuthContext';
+import * as ImagePicker from "expo-image-picker";
 
+export const ProfileScreen = ()  => {
 
+    const [profile, setProfile] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phoneNumber: '',
+        photo: '',
+        orderStatus: false,
+        passwordChanges: false,
+        specialOffers: false,
+        newsletter: false,
+    });
 
-export default function ProfileScreen() {
-    const [orderStatus, setOrderStatus] = useState(false)
-    const toggleOrderStatus = () => setOrderStatus(previousState => !previousState)
+    const [discard, setDiscard] = useState(false);
 
-    const [passwordChanges, setPasswordChanges] = useState(false)
-    const togglePasswordChanges = () => setPasswordChanges(previousState => !previousState)
+    useEffect(() => {
+        (async () => {
+            try {
+                const getProfileData = await AsyncStorage.getItem('profile');
+                setProfile(JSON.parse(getProfileData));
+                setDiscard(false);
+            } catch(err) {
+                console.error(err)
+            }
+        })();
+    }, [discard]);
 
-    const [specialOffers, setSpecialOffers] = useState(false)
-    const toggleSpecialOffers = () => setSpecialOffers(previousState => !previousState)
+    const { updateUserInfo } = useContext(AuthContext);
+    const { logoutUser } = useContext(AuthContext);
 
-    const [newsletter, setNewsletter] = useState(false)
-    const toggleNewsletter = () => setNewsletter(previousState => !previousState)
+    const updateProfile = ( key, value ) => {
+        setProfile((prevState) => ({
+            ...prevState,
+            [key]: value,
+        }));
+    };
 
+    const selectImage = async () => {
+        let selection = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4,3],
+            quality: 1
+        })
 
+        if (!selection.canceled) {
+            setProfile((prevState) => ({
+                ...prevState,
+                ['image']: selection.assets[0].uri,
+            }))
+        }
+    };
 
+    const removeSelection = () => {
+        setProfile((prevState) => ({
+            ...prevState,
+            ['image']: ''
+        }))
+    }
 
   return (
-    <View style={styles.container}>
+    <>
       <View style={styles.profileHeader}>
         <Pressable style={styles.button}>
             <Text style={styles.buttonText}>←</Text>
@@ -30,99 +76,145 @@ export default function ProfileScreen() {
             source={require('../images/Logo.png')}
             resizeMode='contain'
         />
-         <Image
-            style={styles.imageProfile}
-            source={require('../images/Profile.png')}
-            resizeMode='stretch'
-        />
+         <View style={styles.avatarContainer}>
+          {profile.image ? (
+            <Image source={{ uri: profile.image }} style={styles.imageProfile} />
+          ) : (
+            <View style={styles.avatarEmptySmall}>
+              <Text style={styles.avatarEmptySmallText}>
+                {Array.from(profile.firstName)[0]}
+                {Array.from(profile.lastName)[0]}
+              </Text>
+            </View>
+          )}
       </View>
-      <ScrollView style={styles.profileBody}>
+      </View>
 
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+
+      <ScrollView style={styles.profileBody}>
 
         <Text style={styles.bodyHeader}>Personal Information</Text>
         <Text style={styles.inputLabel}>Avatar</Text>
         <View style={styles.profilePicSettings}>
-            <Image
-            style={styles.imageProfileLarge}
-            source={require('../images/Profile.png')}
-            resizeMode='stretch'/>
-            <Pressable style={styles.changePFPButton}>
+        <View style={styles.avatarContainer}>
+          {profile.image ? (
+            <Image source={{ uri: profile.image }} style={styles.imageProfileLarge} />
+          ) : (
+            <View style={styles.avatarEmptyLarge}>
+              <Text style={styles.avatarEmptyLargeText}>
+                {Array.from(profile.firstName)[0]}
+                {Array.from(profile.lastName)[0]}
+              </Text>
+            </View>
+          )}
+          </View>
+            <Pressable
+                style={styles.changePFPButton}
+                title='Pick an image from your Camera Roll'
+                onPress={selectImage}>
                 <Text style={styles.changePFPButtonText}>Change</Text>
             </Pressable>
-            <Pressable style={styles.removePFPButton}>
+            <Pressable
+                style={styles.removePFPButton}
+                title='Pick an image from your Camera Roll'
+                onPress={removeSelection}>
                 <Text style={styles.removePFPButtonText}>Remove</Text>
             </Pressable>
         </View>
 
         <Text style={styles.inputLabel}>First Name</Text>
-        <TextInput style={styles.inputBox}>Sandra</TextInput>
+        <TextInput
+            style={styles.inputBox}
+            value={profile.firstName}
+            onChangeText={(newValue) => updateProfile('firstName', newValue)}
+            placeholder={'First Name'}
+        />
+
         <Text style={styles.inputLabel}>Last Name</Text>
-        <TextInput style={styles.inputBox}>Sansa</TextInput>
+        <TextInput
+            style={styles.inputBox}
+            value={profile.lastName}
+            onChangeText={(newValue) => updateProfile('lastName', newValue)}
+            placeholder={'Last Name'}
+        />
         <Text style={styles.inputLabel}>Email</Text>
-        <TextInput style={styles.inputBox}>sandrasansa@somethingorother.com</TextInput>
+        <TextInput
+            style={styles.inputBox}
+            value={profile.email}
+            onChangeText={(newValue) => updateProfile('email', newValue)}
+            placeholder='Email'
+            keyboardType='email-address'
+        />
         <Text style={styles.inputLabel}>Phone Number</Text>
-        <TextInput style={styles.inputBox}>(202) 358-0001</TextInput>
-
-
-
-
+        <TextInput
+            style={styles.inputBox}
+            value={profile.phoneNumber}
+            onChangeText={(newValue) => updateProfile('phoneNumber', newValue)}
+            placeholder='Phone Number'
+            keyboardType='phone-pad'
+        />
         <Text style={styles.bodyHeader}>Email Notifiction Preferences</Text>
         <View style={styles.notificationOption}>
             <Switch
-                onValueChange={toggleOrderStatus}
-                value={orderStatus}
+                onValueChange={(newValue) => updateProfile('orderStatus', newValue)}
+                value={profile.orderStatus}
                 trackColor={{false: '#767577', true: '#495E57'}}
-                thumbColor={orderStatus ? '#F4CE14' : '#f4f3f4'}
+                thumbColor={profile.orderStatus ? '#F4CE14' : '#f4f3f4'}
             />
             <Text style={styles.notificationSwitchDescription}>Order Status</Text>
         </View>
         <View style={styles.notificationOption}>
             <Switch
-                onValueChange={togglePasswordChanges}
-                value={passwordChanges}
+                onValueChange={(newValue) => updateProfile('passwordChanges', newValue)}
+                value={profile.passwordChanges}
                 trackColor={{false: '#767577', true: '#495E57'}}
-                thumbColor={passwordChanges ? '#F4CE14' : '#f4f3f4'}
+                thumbColor={profile.passwordChanges ? '#F4CE14' : '#f4f3f4'}
             />
             <Text style={styles.notificationSwitchDescription}>Password Changes</Text>
         </View>
         <View style={styles.notificationOption}>
             <Switch
-                onValueChange={toggleSpecialOffers}
-                value={specialOffers}
+                onValueChange={(newValue) => updateProfile('specialOffers', newValue)}
+                value={profile.specialOffers}
                 trackColor={{false: '#767577', true: '#495E57'}}
-                thumbColor={specialOffers ? '#F4CE14' : '#f4f3f4'}
+                thumbColor={profile.specialOffers ? '#F4CE14' : '#f4f3f4'}
             />
             <Text style={styles.notificationSwitchDescription}>Special Offers</Text>
         </View>
         <View style={styles.notificationOption}>
             <Switch
-                onValueChange={toggleNewsletter}
-                value={newsletter}
+                onValueChange={(newValue) => updateProfile('newsletter', newValue)}
+                value={profile.newsletter}
                 trackColor={{false: '#767577', true: '#495E57'}}
-                thumbColor={newsletter ? '#F4CE14' : '#f4f3f4'}
+                thumbColor={profile.newsletter ? '#F4CE14' : '#f4f3f4'}
             />
             <Text style={styles.notificationSwitchDescription}>Newsletter</Text>
         </View>
-        
-        
-
-
-
       </ScrollView>
       <View style={styles.profileFooter}>
-        <Pressable style={styles.logoutButton}>
+        <Pressable
+            style={styles.logoutButton}
+            onPress={() => logoutUser()}>
             <Text style={styles.logoutButtonText}>Log out</Text>
         </Pressable>
         <View style={styles.changeButtons}>
-            <Pressable style={styles.discardChanges}>
+            <Pressable
+                style={styles.discardChanges}
+                onPress={() => setDiscard(true)}>
                 <Text style={styles.discardButtonText}>Discard Changes</Text>
             </Pressable>
-            <Pressable style={styles.saveChanges}>
+            <Pressable
+                style={styles.saveChanges}
+                onPress={() => updateUserInfo(profile)}>
                 <Text style={styles.saveButtonText}>Save Changes</Text>
             </Pressable>
         </View>
       </View>
-    </View>
+      </KeyboardAvoidingView>
+      </>
   );
 }
 
@@ -214,8 +306,8 @@ const styles = StyleSheet.create({
         borderRadius: 60,
       },
       imageProfileLarge: {
-        height: 100,
-        width: 100,
+        height: 80,
+        width: 80,
         marginLeft: 10,
         marginRight: 14,
         marginTop: 12,
@@ -312,4 +404,44 @@ const styles = StyleSheet.create({
         color: "white",
         fontWeight: '700',
       },
+
+      avatarContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginVertical: 10,
+      },
+
+      avatarEmptyLarge: {
+        height: 80,
+        width: 80,
+        marginLeft: 10,
+        marginRight: 14,
+        marginTop: 12,
+        borderRadius: 60,
+        backgroundColor: "#0b9a6a",
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      avatarEmptySmall: {
+        height: 60,
+        width: 60,
+        marginRight: 30,
+        borderRadius: 60,
+        backgroundColor: "#0b9a6a",
+        alignItems: "center",
+        justifyContent: "center",
+      },
+      avatarEmptySmallText: {
+        fontSize: 20,
+        color: "#FFFFFF",
+        fontWeight: "bold",
+      },
+      avatarEmptyLargeText: {
+        fontSize: 32,
+        color: "#FFFFFF",
+        fontWeight: "bold",
+      },
     })
+
+
+    
