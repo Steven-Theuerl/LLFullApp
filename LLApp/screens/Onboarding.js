@@ -1,32 +1,16 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native';
 
+import {AuthContext} from "../contexts/AuthContext";
 
 
 
+export const Onboarding = () => {
+    const [ name, setName ] = useState('');
+    const [ email, setEmail ] = useState('');
 
-export default function Onboarding() {
-
-    const [userSettings, changeUserSettings] = useState({
-        name: 'Sandra',
-        email: 'Sansa',
-    });
-
-
-useUpdate = () => {
-    (async () => {
-        const userName = ["userPrefName", "userSettings.name"]
-        const userEmail = ["userPrefEmail", "userSettings.email"]
-        try {
-            await AsyncStorage.multiSet([userName, userEmail])
-        } catch(e) {
-            alert(`An error occured: ${e.message}`)
-        }
-    })};
-
-  
+    const { setUserInfo } =  useContext(AuthContext);
 
   return (
     <View style={styles.container}>
@@ -43,8 +27,8 @@ useUpdate = () => {
                 <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
                     style={styles.inputBox}
-                    value={userSettings.name}
-                    onValueChange={(text) => changeUserSettings(name)}
+                    value={name}
+                    onChangeText={setName}
                     placeholder={'Name'}
                     keyboardType={'email-address'}
                 />
@@ -53,8 +37,8 @@ useUpdate = () => {
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
                     style={styles.inputBox}
-                    value={userSettings.email}
-                    onValueChange={(text) => changeUserSettings(text)}
+                    value={email}
+                    onChangeText={setEmail}
                     placeholder={'Email'}
                     keyboardType={'email-address'}
                 />
@@ -62,7 +46,7 @@ useUpdate = () => {
         </View>
         <View style={styles.footerContainer}>
             <Pressable style={styles.button}
-                        onPress={useUpdate()}>
+                        onPress={() => setUserInfo({ name, email })}>
                 <Text style={styles.buttonText}>Next</Text>
             </Pressable>
         </View>

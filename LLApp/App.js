@@ -1,94 +1,119 @@
 import * as React from 'react';
-import * as SecureStore from 'expo-secure-store'
-import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useReducer, useMemo } from 'react';
+import { StatusBar } from 'expo-status-bar';
+import { Alert } from 'react-native';
 
-
-import Onboarding from './screens/Onboarding';
+import { Onboarding } from './screens/Onboarding';
 import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import HomeScreen from './screens/Home';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { AuthContext } from "./contexts/AuthContext";
+
+
+const Stack = createNativeStackNavigator();
+
 export default function App({ navigation }) {
 
-
-    const Stack = createNativeStackNavigator();
-
-    const [state, dispatch] = React.useReducer(
+    const [state, dispatch] = useReducer(
         (prevState, action) => {
             switch (action.type) {
-                case 'RESTORE_TOKEN' :
+                case 'ONBOARDING' :
                     return {
                         ...prevState,
-                        userToken: action.token,
                         isLoading: false,
-                    };
-                case 'SIGN_IN' :
-                    return {
-                        ...prevState,
-                        isOnboardingCompleted: true,
-                        userToken: null,
-                    };
-                case 'SIGN_OUT' :
-                    return {
-                        ...prevState,
-                        isOnboardingCompleted: true,
-                        userToken: null,
+                        isOnboardingCompleted: action.isOnboardingCompleted,
                     };
             }
         },
         {
-            isLoading: false,
-            isOnboardingCompleted: true,
-            userToken: null,
+            isLoading: true,
+            isOnboardingCompleted: false,
         }
     );
 
-    React.useEffect(() => {
-       ( async() => {
+    useEffect(() => {
+       (async() => {
+        let profileInfo = [];
             try {
-                const state = await AsyncStorage.multiGet(userSettings)
+                const userSettings = await AsyncStorage.getItem( 'profile' );
                 if (userSettings !== null) {
-                    dispatch({type: 'SIGN_IN'})
-                } else {
-                    dispatch({ type: 'RESTORE_TOKEN'})
-            }
-            } catch(e) { }
-            })})
+                    profileInfo = userSettings;
+                }
+            } catch (err) {
+                console.error(err)
+                } finally {
+                    if (Object.keys(profileInfo).length != 0) {
+                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: true });
+                    } else {
+                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: false });
+                    }
+                }
+        })();
+    }, []);
 
-
+            const authContext = useMemo(
+                () => ({
+                    setUserInfo: async ( data ) => {
+                        try {
+                            const jsonValue = JSON.stringify( data );
+                            await AsyncStorage.setItem( 'profile', jsonValue );
+                        } catch (err) {
+                        console.error(err)
+                        }
+                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: true })
+                    },
+                    update: async ( data ) => {
+                        try {
+                            const jsonValue = JSON.stringify(data);
+                            await AsyncStorage.setItem( 'profile', jsonValue )
+                        } catch(err) {
+                            alert(err)
+                        }
+                        Alert.alert('Changes saved!');
+                    },
+                    logout: async () => {
+                        try {
+                            await AsyncStorage.clear();
+                        } catch(err) {
+                        Alert.alert(err)
+                        }
+                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: false })
+                    },
+                }),
+                []
+            );
 
     if (state.isLoading) {
         return <SplashScreen />
     }
 
     return (
-        <NavigationContainer>
-           
+        <AuthContext.Provider value={authContext}>
+            <StatusBar />
+            <NavigationContainer>
                 <Stack.Navigator
                     >
                     {state.isOnboardingCompleted ? (
                         <>
-                        <Stack.Screen name="Home" component={HomeScreen} />
-                        <Stack.Screen  name="Profile" component={ProfileScreen} />
+                        <Stack.Screen
+                            name="Profile"
+                            component={ ProfileScreen }
+                        />
                         </>
                     ) : (
-                        //User is NOT signed in
-                    <Stack.Screen name="Onboarding" component={Onboarding} />
-                )}
+                    <Stack.Screen
+                        name="Onboarding"
+                        component={ Onboarding }
+                        options={{ headerShown: false}}
+                    />
+                    )}
                 </Stack.Navigator>
-         
-        </NavigationContainer>
+            </NavigationContainer>
+        </AuthContext.Provider>
     );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
