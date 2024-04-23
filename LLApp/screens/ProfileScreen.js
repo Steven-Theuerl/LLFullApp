@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AuthContext } from '../contexts/AuthContext';
 import * as ImagePicker from "expo-image-picker";
 
-export const ProfileScreen = ()  => {
+export const ProfileScreen = ( {navigation})  => {
 
     const [profile, setProfile] = useState({
         firstName: '',
@@ -53,7 +53,7 @@ export const ProfileScreen = ()  => {
         if (!selection.canceled) {
             setProfile((prevState) => ({
                 ...prevState,
-                ['image']: selection.assets[0].uri,
+                ['photo']: selection.assets[0].uri,
             }))
         }
     };
@@ -61,14 +61,16 @@ export const ProfileScreen = ()  => {
     const removeSelection = () => {
         setProfile((prevState) => ({
             ...prevState,
-            ['image']: ''
+            ['photo']: ''
         }))
     }
 
   return (
     <>
       <View style={styles.profileHeader}>
-        <Pressable style={styles.button}>
+        <Pressable
+            style={styles.button}
+            onPress={() => navigation.navigate('HomeScreen')}>
             <Text style={styles.buttonText}>←</Text>
         </Pressable>
         <Image
@@ -77,8 +79,8 @@ export const ProfileScreen = ()  => {
             resizeMode='contain'
         />
          <View style={styles.avatarContainer}>
-          {profile.image ? (
-            <Image source={{ uri: profile.image }} style={styles.imageProfile} />
+          {profile.photo ? (
+            <Image source={{ uri: profile.photo }} style={styles.imageProfile} />
           ) : (
             <View style={styles.avatarEmptySmall}>
               <Text style={styles.avatarEmptySmallText}>
@@ -100,8 +102,8 @@ export const ProfileScreen = ()  => {
         <Text style={styles.inputLabel}>Avatar</Text>
         <View style={styles.profilePicSettings}>
         <View style={styles.avatarContainer}>
-          {profile.image ? (
-            <Image source={{ uri: profile.image }} style={styles.imageProfileLarge} />
+          {profile.photo ? (
+            <Image source={{ uri: profile.photo }} style={styles.imageProfileLarge} />
           ) : (
             <View style={styles.avatarEmptyLarge}>
               <Text style={styles.avatarEmptyLargeText}>
@@ -194,6 +196,7 @@ export const ProfileScreen = ()  => {
             <Text style={styles.notificationSwitchDescription}>Newsletter</Text>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
       <View style={styles.profileFooter}>
         <Pressable
             style={styles.logoutButton}
@@ -213,7 +216,6 @@ export const ProfileScreen = ()  => {
             </Pressable>
         </View>
       </View>
-      </KeyboardAvoidingView>
       </>
   );
 }
@@ -226,6 +228,7 @@ const styles = StyleSheet.create({
     profileHeader: {
         flex: .15,
         width: 428,
+        marginTop: 50,
         flexDirection: 'row',
         justifyContent: 'space-between',
   },
@@ -272,6 +275,7 @@ const styles = StyleSheet.create({
         border: 2,
         marginLeft: 8,
         marginRight: 8,
+        backgroundColor: '#EDEFEE'
   },
     profileFooter: {
         flex: .25,
@@ -349,11 +353,6 @@ const styles = StyleSheet.create({
       notificationSwitchDescription: {
         marginLeft: 20,
       },
-
-
-
-
-
       logoutButton: {
         width: 325,
         height: 40,
@@ -418,7 +417,7 @@ const styles = StyleSheet.create({
         marginRight: 14,
         marginTop: 12,
         borderRadius: 60,
-        backgroundColor: "#0b9a6a",
+        backgroundColor: "#EE9972",
         alignItems: "center",
         justifyContent: "center",
       },
@@ -427,18 +426,18 @@ const styles = StyleSheet.create({
         width: 60,
         marginRight: 30,
         borderRadius: 60,
-        backgroundColor: "#0b9a6a",
+        backgroundColor: "#EE9972",
         alignItems: "center",
         justifyContent: "center",
       },
       avatarEmptySmallText: {
         fontSize: 20,
-        color: "#FFFFFF",
+        color: "#FBDABB",
         fontWeight: "bold",
       },
       avatarEmptyLargeText: {
         fontSize: 32,
-        color: "#FFFFFF",
+        color: "#FBDABB",
         fontWeight: "bold",
       },
     })

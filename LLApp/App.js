@@ -8,7 +8,7 @@ import { Alert } from 'react-native';
 import { Onboarding } from './screens/Onboarding';
 import { ProfileScreen } from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
-import HomeScreen from './screens/Home';
+import { HomeScreen } from './screens/HomeScreen';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -101,13 +101,19 @@ export default function App({ navigation }) {
                     {state.isOnboardingCompleted ? (
                         <>
                         <Stack.Screen
-                            name="Profile"
+                            name='HomeScreen'
+                            component={ HomeScreen }
+                            options={{headerShown: false}}
+                        />
+                        <Stack.Screen
+                            name='ProfileScreen'
                             component={ ProfileScreen }
+                            options={{headerShown: false}}
                         />
                         </>
                     ) : (
                     <Stack.Screen
-                        name="Onboarding"
+                        name='Onboarding'
                         component={ Onboarding }
                         options={{ headerShown: false}}
                     />
