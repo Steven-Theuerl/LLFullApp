@@ -1,11 +1,17 @@
 import { StatusBar } from 'expo-status-bar';
-import { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, Pressable, Image } from 'react-native';
+import React, { useState, useContext } from 'react';
+import { StyleSheet, Text, View, TextInput, Pressable, Image, KeyboardAvoidingView, Platform } from 'react-native';
 
-export default function Onboarding() {
+import {AuthContext} from "../contexts/AuthContext";
 
-    const [name, nameChange] = useState('');
-    const [email, emailChange] = useState('');
+
+
+export const Onboarding = () => {
+    const [ firstName, setFirstName ] = useState('');
+    const [ lastName, setLastName ] = useState('');
+    const [ email, setEmail ] = useState('');
+
+    const { setUserInfo } =  useContext(AuthContext);
 
   return (
     <View style={styles.container}>
@@ -16,32 +22,47 @@ export default function Onboarding() {
                 resizeMode='contain'
             />
         </View>
+        <KeyboardAvoidingView
+        style={styles.bodyContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.bodyContainer}>
             <Text style={styles.bodyHeader}>Let us get to know you</Text>
-            <View>
-                <Text style={styles.inputLabel}>Name</Text>
+            <View style={styles.inputSet}>
+                <Text style={styles.inputLabel}>First Name</Text>
                 <TextInput
                     style={styles.inputBox}
-                    value={name}
-                    onChangeText={nameChange}
-                    placeholder={'Name'}
+                    value={firstName}
+                    onChangeText={setFirstName}
+                    placeholder={'First Name'}
                     keyboardType={'email-address'}
                 />
             </View>
-            <View>
+            <View style={styles.inputSet}>
+                <Text style={styles.inputLabel}>Last Name</Text>
+                <TextInput
+                    style={styles.inputBox}
+                    value={lastName}
+                    onChangeText={setLastName}
+                    placeholder={'Email'}
+                    keyboardType={'email-address'}
+                />
+            </View>
+            <View style={styles.inputSet}>
                 <Text style={styles.inputLabel}>Email</Text>
                 <TextInput
                     style={styles.inputBox}
                     value={email}
-                    onChangeText={emailChange}
+                    onChangeText={setEmail}
                     placeholder={'Email'}
                     keyboardType={'email-address'}
                 />
             </View>
         </View>
-        <View style={styles.footerContainer}>
+        
+      </KeyboardAvoidingView>
+      <View style={styles.footerContainer}>
             <Pressable style={styles.button}
-                        disabled={true}>
+                        onPress={() => setUserInfo({ firstName, lastName, email })}>
                 <Text style={styles.buttonText}>Next</Text>
             </Pressable>
         </View>
@@ -72,7 +93,7 @@ const styles = StyleSheet.create({
 
   bodyHeader: {
     fontSize: 30,
-    marginBottom: 150,
+    marginBottom: 50,
     
   },
 
@@ -98,11 +119,16 @@ inputBox: {
   },
 
   inputLabel: {
-    fontSize: 20,
+    fontSize: 16,
     marginTop: 10,
     marginBottom: 5,
-    marginLeft: 135,
-    marginRight: 135,
+    marginLeft: 115,
+    marginRight: 115,
+  },
+
+  inputSet: {
+    flexDirection: 'column',
+    alignItems: 'center',
   },
 
 button: {
