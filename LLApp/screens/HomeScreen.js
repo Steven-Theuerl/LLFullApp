@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, SectionList, StyleSheet, Pressable, Image } from 'react-native';
+import { Searchbar } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SearchBar } from 'react-native-screens';
 import Filters from '../components/Filters'
 import { createTable, getMenuItems, saveMenuItems, filterByQueryAndCategories } from '../database';
 import { getSectionListData, useUpdateEffect } from '../utilities/utilities';
+import debounce from 'lodash.debounce';
 
 
 const dataURL = 'https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json';
 
-const sections = ['Starters', 'Mains', 'Desserts']
+const sections = ['starters', 'mains', 'desserts']
 
 const Item = ({ name, price, description, image }) => (
     <View style={styles.item}>
@@ -42,47 +43,89 @@ export const HomeScreen = ( {navigation} ) => {
     });
 
     const [data, setData] = useState([]);
+    const [searchbarInput, setSearchbarInput] = useState('');
+    const [request, setRequest] = useState('');
     const [filterSelections, setFilterSelections] = useState(
         sections.map(() => false)
-    )
+    );
 
-const fetchData = async () => {
-    try {
-        const reply = await fetch(dataURL);
-        const json = await reply.json();
-        const menu = json.menu.map((item, index) => ({
-            id: index + 1,
-            name: item.name,
-            price: item.price.toString(),
-            description: item.description,
-            image: item.image,
-            category: item.category,
-        }));
-        return menu;
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-useEffect(() => {
-    (async () => {
-        let menuItems = [];
+    const fetchData = async () => {
         try {
-            await createTable();
-            menuItems = await getMenuItems();
-            if (!menuItems.length) {
-                menuItems = await fetchData();
-                saveMenuItems(menuItems);
-            }
-            const sectionListData = getSectionListData(menuItems);
-            setData(sectionListData);
-            const getProfile = await AsyncStorage.getItem('profile')
-            setProfile(JSON.parse(getProfile))
-          } catch (err){
+            const reply = await fetch(dataURL);
+            const json = await reply.json();
+            const menu = json.menu.map((item, index) => ({
+                id: index + 1,
+                name: item.name,
+                price: item.price.toString(),
+                description: item.description,
+                image: item.image,
+                category: item.category,
+            }));
+            return menu;
+        } catch (err) {
+            console.error(err);
+        } finally {
         }
-    })();
-}, []);
+    };
+
+    useEffect(() => {
+        (async () => {
+            let menuItems = [];
+            try {
+                await createTable();
+                menuItems = await getMenuItems();
+                if (!menuItems.length) {
+                    menuItems = await fetchData();
+                    saveMenuItems(menuItems);
+                }
+                const sectionListData = getSectionListData(menuItems);
+                setData(sectionListData);
+                const getProfile = await AsyncStorage.getItem('profile')
+                setProfile(JSON.parse(getProfile))
+            } catch (err){
+            }
+        })();
+    }, []);
+
+    useUpdateEffect(() => {
+        (async () => {
+            const selectedCategories = sections.filter((s, i) => {
+                if (filterSelections.every((item) => item === false)) {
+                    return true;
+                }
+                return filterSelections[i];
+            });
+            try {
+                const menuItems = await filterByQueryAndCategories(
+                    request,
+                    selectedCategories
+                );
+                const sectionListData = getSectionListData(menuItems);
+                setData(sectionListData);
+            } catch(err) {
+                alert(err.message)
+            }
+        })();
+    }, [filterSelections, request])
+
+    const lookup = useCallback((r) => {
+        setRequest(r);
+    }, []);
+
+    const debouncedLookup = useMemo(() => debounce(lookup, 500), [lookup]);
+
+    // debounced lookup, handleSearchChange, and handleFiltersChange
+
+    const searchFunction = (text) => {
+        setSearchbarInput(text);
+        debouncedLookup(text);
+    }
+
+    const filtersChange = async (index) => {
+        const newArray = [...filterSelections];
+        newArray[index] = !filterSelections[index];
+        setFilterSelections(newArray);
+    }
 
     return (
 
@@ -123,17 +166,25 @@ useEffect(() => {
                         source={require('../images/heroImage.png')}
                         />
                     </View>
-                    <SearchBar style={styles.searchBar}></SearchBar>
+                    <Searchbar
+                        style={styles.searchBar}
+                        value={searchbarInput}
+                        onChangeText={searchFunction}
+                        placeholder='Search'
+                        placeholderTextColor={'#EDEFEE'}
+                        elevation={4}/>
                 </View>
             </View>
-            <View style={styles.filterComponent}>
-                <Text>
+
+                <Text style={styles.deliveryText}>
                     ORDER FOR DELIVERY!!!
                 </Text>
-        
 
+            <Filters
+                selections={filterSelections}
+                onChange={filtersChange}
+                sections={sections}/>
 
-            </View>
             <View style={styles.menuContainer}>
                 <SectionList
                     style={styles.menuList}
@@ -161,9 +212,10 @@ useEffect(() => {
 
 const styles = StyleSheet.create({
     profileHeader: {
-        flex: .15,
+        flex: .215,
         width: 428,
         marginTop: 50,
+        marginBottom: 15,
         flexDirection: 'row',
         justifyContent: 'space-between',
   },
@@ -215,7 +267,7 @@ buttonText: {
     fontWeight: "bold",
   },
   heroContainer: {
-    flex: .6,
+    flex: .85,
     backgroundColor: '#495E57',
   },
   heroBody: {
@@ -250,13 +302,12 @@ buttonText: {
     borderRadius: 16
   },
   searchBar: {
-    height: 40,
+    height: 55,
     width: 375,
     borderWidth: 1,
     backgroundColor: '#EDEFEE',
     borderRadius: 8,
     marginLeft: 18,
-    marginTop: 12
   },
   menuContainer: {
      flex: 1,
@@ -264,20 +315,55 @@ buttonText: {
   },
   item: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     borderTopWidth: 1,
     borderTopColor: '#ffffff',
     paddingVertical: 10
   },
-  menuItemHeader: {
-    fontSize: 24,
-    paddingVertical: 6,
-    color: 'black'
+  itemBody: {
+    flex: 1,
   },
-  name: {
+  menuItemHeader: {
     fontSize: 20,
-    color: '#ffffff'
+    paddingVertical: 4,
+    color: '#495E57',
+    backgroundColor: '#EDEFEE',
+    marginLeft: 5,
+    fontWeight: '500'
+  },
+  itemName: {
+    fontSize: 18,
+    color: 'black',
+    paddingVertical: 4,
+    marginLeft: 10,
+    fontWeight: '500'
+  },
+  itemDescription: {
+    fontSize: 14,
+    color: '#333333',
+     paddingVertical: 4,
+     marginLeft: 20
+  },
+  itemPrice: {
+    fontSize: 16,
+    color: '#333333',
+    paddingVertical: 6,
+    marginLeft: 10
+  },
+  itemImage: {
+    height: 100,
+    width: 100,
+    marginRight: 10,
+    marginLeft: 30,
+    marginTop: 15
+  },
+
+  deliveryText: {
+    fontSize: 24,
+    paddingVertical: 20,
+    marginLeft: 5,
+    fontWeight: '600'
   },
 
 })

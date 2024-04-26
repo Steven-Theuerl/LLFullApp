@@ -56,37 +56,37 @@ export default function App({ navigation }) {
         })();
     }, []);
 
-            const authContext = useMemo(
-                () => ({
-                    setUserInfo: async ( data ) => {
-                        try {
-                            const jsonValue = JSON.stringify( data );
-                            await AsyncStorage.setItem( 'profile', jsonValue );
-                        } catch (err) {
-                        console.error(err)
-                        }
-                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: true })
-                    },
-                    updateUserInfo: async ( data ) => {
-                        try {
-                            const jsonValue = JSON.stringify(data);
-                            await AsyncStorage.setItem( 'profile', jsonValue )
-                        } catch(err) {
-                            alert(err)
-                        }
-                        Alert.alert('Changes saved!');
-                    },
-                    logoutUser: async () => {
-                        try {
-                            await AsyncStorage.clear();
-                        } catch(err) {
-                        Alert.alert(err)
-                        }
-                        dispatch({ type: 'ONBOARDING', isOnboardingCompleted: false })
-                    },
-                }),
-                []
-            );
+    const authContext = useMemo(
+        () => ({
+            setUserInfo: async ( data ) => {
+                try {
+                    const jsonValue = JSON.stringify( data );
+                    await AsyncStorage.setItem( 'profile', jsonValue );
+                } catch ( err ) {
+                console.error( err )
+                }
+                dispatch({ type: 'ONBOARDING', isOnboardingCompleted: true })
+            },
+            updateUserInfo: async ( data ) => {
+                try {
+                    const jsonValue = JSON.stringify( data );
+                    await AsyncStorage.setItem( 'profile', jsonValue )
+                } catch( err ) {
+                    alert( err )
+                }
+                Alert.alert('Changes saved!');
+            },
+            logoutUser: async () => {
+                try {
+                    await AsyncStorage.clear();
+                } catch( err ) {
+                Alert.alert( err )
+                }
+                dispatch({ type: 'ONBOARDING', isOnboardingCompleted: false })
+            },
+        }),
+        []
+    );
 
     if (state.isLoading) {
         return <SplashScreen />
